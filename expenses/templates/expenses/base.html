@@ -18,52 +18,53 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Navigation Bar Box Style */
+        /* Navigation Bar Styling */
         .navbar {
-            border-radius: 0 0 15px 15px;
-            padding: 15px 0;
+            border-radius: 0 0 20px 20px;
+            padding: 12px 0;
         }
 
         .nav-box {
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            padding: 5px 15px;
-            margin: 0 5px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+            padding: 6px 18px;
+            margin: 5px;
             transition: all 0.3s ease;
             color: white !important;
             text-decoration: none;
             display: inline-block;
+            font-weight: 500;
         }
 
         .nav-box:hover {
             background-color: white;
             color: var(--primary-color) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        .active-box {
-            background-color: rgba(255, 255, 255, 0.2);
-            font-weight: bold;
-        }
-
-        /* Container adjustments for Mobile */
+        /* Main Content Area */
         .main-container {
             margin-top: 30px;
-            padding-bottom: 50px;
+            padding-bottom: 60px;
         }
 
+        /* Mobile Adjustments */
         @media (max-width: 991px) {
+            .navbar-collapse {
+                margin-top: 15px;
+            }
             .nav-box {
                 display: block;
-                margin: 10px 0;
                 text-align: center;
+                margin: 8px 0;
             }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-lg">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-lg sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3" href="/">PK Tracker</a>
             
@@ -74,10 +75,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-box active-box" href="/">Home</a>
+                        <a class="nav-box" href="/">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-box" href="/expenses">Expenses</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-box" href="/history">History</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-box" href="/charts">Charts</a>

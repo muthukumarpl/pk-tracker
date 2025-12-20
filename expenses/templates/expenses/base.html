@@ -6,92 +6,104 @@
     <title>PK Expense Tracker</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
             --primary-color: #0d6efd;
-            --bg-light: #f4f7f6;
         }
 
+        /* 1. பழையபடி பேக்ரவுண்ட் கலர் மற்றும் அனிமேஷன் */
         body {
-            background-color: var(--bg-light);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); /* பழைய நீல நிற பேக்ரவுண்ட் */
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* Navigation Bar Styling */
+        /* 2. பண மழை அனிமேஷன் (Money Rain) */
+        .money {
+            position: absolute;
+            color: #4caf50; /* பச்சை நிறம் */
+            font-size: 2rem;
+            user-select: none;
+            pointer-events: none;
+            animation: fall linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(105vh); }
+        }
+
+        /* 3. மெனு பாக்ஸ் ஸ்டைல் */
         .navbar {
-            border-radius: 0 0 20px 20px;
-            padding: 12px 0;
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding: 15px 0;
         }
 
         .nav-box {
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 10px;
-            padding: 6px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 6px 15px;
             margin: 5px;
-            transition: all 0.3s ease;
             color: white !important;
             text-decoration: none;
-            display: inline-block;
-            font-weight: 500;
+            transition: 0.3s;
         }
 
         .nav-box:hover {
-            background-color: white;
-            color: var(--primary-color) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            background: white;
+            color: #1e3c72 !important;
         }
 
-        /* Main Content Area */
         .main-container {
             margin-top: 30px;
-            padding-bottom: 60px;
-        }
-
-        /* Mobile Adjustments */
-        @media (max-width: 991px) {
-            .navbar-collapse {
-                margin-top: 15px;
-            }
-            .nav-box {
-                display: block;
-                text-align: center;
-                margin: 8px 0;
-            }
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-lg sticky-top">
+    <script>
+        function createMoney() {
+            const money = document.createElement('div');
+            money.innerText = '₹';
+            money.classList.add('money');
+            money.style.left = Math.random() * 100 + 'vw';
+            money.style.animationDuration = Math.random() * 3 + 2 + 's';
+            money.style.opacity = Math.random();
+            document.body.appendChild(money);
+            setTimeout(() => money.remove(), 5000);
+        }
+        setInterval(createMoney, 300);
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold fs-3" href="/">PK Tracker</a>
-            
+            <a class="navbar-brand fw-bold fs-3" href="/">PK Tracker 💰</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-box" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-box" href="/expenses">Expenses</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-box" href="/history">History</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-box" href="/charts">Charts</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-box" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-box" href="/expenses">Expenses</a></li>
+                    <li class="nav-item"><a class="nav-box" href="/history">History</a></li>
+                    <li class="nav-item"><a class="nav-box" href="/charts">Charts</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container main-container">
+    <div class="container main-container shadow">
         {% block content %}
         {% endblock %}
     </div>

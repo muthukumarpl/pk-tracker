@@ -10,6 +10,6 @@ urlpatterns = [
     path('charts/', views.charts, name='charts'),
     path('download/', views.download, name='download'),
     path('export-csv/', views.export_csv, name='export_csv'),
-    path('history/', views.expense_history, name='expense-history'),
-
+    path('history/', views.expense_history, name='expense_history'),
 ]
+

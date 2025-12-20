@@ -15,36 +15,51 @@
         }
 
         body {
-            /* பழைய நீல நிற அனிமேஷன் பேக்ரவுண்ட் */
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* பின்னணி நிறத்தை லேசாக மாற்றியுள்ளேன் (Opacity decreased) */
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.8) 0%, rgba(42, 82, 152, 0.8) 100%);
+            background-attachment: fixed; /* ஸ்க்ரோல் செய்யும்போது பின்னணி மாறாது */
+            font-family: 'Segoe UI', sans-serif;
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
         }
 
-        /* பண மழை அனிமேஷன் (Money Rain) */
+        /* பண மழை அனிமேஷன் - இதை இப்போது முன்னால் கொண்டு வந்துள்ளேன் (z-index: 0) */
         .money {
-            position: absolute;
+            position: fixed; /* Absolute-க்கு பதில் Fixed கொடுத்தால் எல்லா பக்கத்திலும் விழும் */
+            top: -50px;
             color: var(--money-color);
             font-size: 2rem;
             user-select: none;
             pointer-events: none;
             animation: fall linear infinite;
-            z-index: -1;
+            z-index: 0; /* கன்டென்ட்டுக்கு பின்னால் ஆனால் பேக்ரவுண்டுக்கு முன்னால் */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         @keyframes fall {
-            to { transform: translateY(105vh); }
+            to { transform: translateY(110vh); }
         }
 
-        /* நவீன மெனு பாக்ஸ் ஸ்டைல் */
+        /* மெனு மற்றும் கன்டென்ட் பாக்ஸ் (Glassmorphism Effect) */
         .navbar {
             background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding: 12px 0;
+            z-index: 10;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 5; /* பண மழைக்கு மேலே இது இருக்கும் */
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.4); /* கன்டென்ட் பாக்ஸ் லேசான கருப்பு நிறம் - எழுத்துக்கள் தெரிய */
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 50px;
         }
 
         .nav-box {
@@ -53,47 +68,13 @@
             padding: 8px 16px;
             margin: 5px;
             color: white !important;
-            text-decoration: none;
-            transition: all 0.3s ease;
+            transition: 0.3s;
             display: inline-block;
-            font-weight: 500;
         }
 
         .nav-box:hover {
             background: white;
             color: #1e3c72 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .download-btn {
-            border-color: #ffc107;
-            color: #ffc107 !important;
-        }
-
-        .download-btn:hover {
-            background-color: #ffc107;
-            color: #1e3c72 !important;
-        }
-
-        /* மெயின் கன்டெய்னர் பாக்ஸ் */
-        .main-container {
-            margin-top: 30px;
-            padding: 25px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 50px;
-        }
-
-        /* மொபைல் வியூ மாற்றங்கள் */
-        @media (max-width: 991px) {
-            .nav-box {
-                display: block;
-                text-align: center;
-                margin: 8px 0;
-            }
         }
     </style>
 </head>
@@ -106,38 +87,26 @@
             money.classList.add('money');
             money.style.left = Math.random() * 100 + 'vw';
             money.style.animationDuration = Math.random() * 3 + 2 + 's';
-            money.style.opacity = Math.random();
+            money.style.opacity = Math.random() * 0.7 + 0.3; // மிக மெலிதாக இல்லாமல் தெரியும்படி
             document.body.appendChild(money);
-            setTimeout(() => money.remove(), 5000);
+            setTimeout(() => money.remove(), 6000);
         }
-        setInterval(createMoney, 300);
+        setInterval(createMoney, 400);
     </script>
 
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3" href="{% url 'home' %}">PK Tracker 💰</a>
-            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto text-center">
-                    <li class="nav-item">
-                        <a class="nav-box" href="{% url 'home' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-box" href="{% url 'expense_list' %}">Expenses</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-box" href="{% url 'expense_history' %}">History</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-box" href="{% url 'charts' %}">Charts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-box download-btn" href="{% url 'export_csv' %}">Download CSV</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-box" href="{% url 'home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-box" href="{% url 'expense_list' %}">Expenses</a></li>
+                    <li class="nav-item"><a class="nav-box" href="{% url 'expense_history' %}">History</a></li>
+                    <li class="nav-item"><a class="nav-box" href="{% url 'charts' %}">Charts</a></li>
+                    <li class="nav-item"><a class="nav-box border-warning text-warning" href="{% url 'export_csv' %}">Download</a></li>
                 </ul>
             </div>
         </div>

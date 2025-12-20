@@ -93,6 +93,11 @@ def charts(request):
     amounts = list(data.values())
     return render(request, 'expenses/charts.html', {'categories': categories, 'amounts': amounts})
 
+def expense_history(request):
+    # எல்லா செலவுகளையும் எடுத்து தேதியின் அடிப்படையில் வரிசைப்படுத்துகிறோம்
+    expenses = Expense.objects.all().order_by('-date')
+    return render(request, 'expenses/history.html', {'expenses': expenses})
+
 
 def download(request):
     return render(request, 'expenses/download.html')
@@ -105,4 +110,5 @@ def export_csv(request):
     writer.writerow(['Title', 'Category', 'Amount', 'Date'])
     for expense in Expense.objects.all():
         writer.writerow([expense.title, expense.category, expense.amount, expense.date])
+
     return response

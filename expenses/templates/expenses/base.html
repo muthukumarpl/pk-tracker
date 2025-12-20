@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PK Expense Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- MAIN THEME --- */
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            font-family: sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .navbar { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); z-index: 10; position: relative; }
+        .nav-link { color: white !important; font-weight: bold; margin-right: 15px; }
+        .nav-link:hover { color: #38ef7d !important; }
+
+        .card-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 5;
+        }
+
+        .btn-custom { background: linear-gradient(45deg, #11998e, #38ef7d); border: none; color: white; padding: 10px 20px; border-radius: 25px; font-weight: bold; }
+        a { text-decoration: none; }
+
+        /* --- 🌈 COLOURFUL MONEY RAIN ANIMATION 🌈 --- */
+        .money-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .money {
+            position: absolute;
+            top: -50px;
+            font-size: 24px;
+            opacity: 0.8;
+            /* இரண்டு அனிமேஷன் நடக்கும்: 1. கீழே விழும், 2. கலர் மாறும் */
+            animation: fall linear infinite, color-change 2s linear infinite;
+        }
+
+        /* கீழே விழும் அனிமேஷன் */
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* கலர் மாறும் அனிமேஷன் (Rainbow Effect) */
+        @keyframes color-change {
+            0% { filter: hue-rotate(0deg); color: gold; text-shadow: 0 0 5px gold; }
+            25% { filter: hue-rotate(90deg); color: #ff00cc; text-shadow: 0 0 5px #ff00cc; }
+            50% { filter: hue-rotate(180deg); color: cyan; text-shadow: 0 0 5px cyan; }
+            75% { filter: hue-rotate(270deg); color: #00ff00; text-shadow: 0 0 5px #00ff00; }
+            100% { filter: hue-rotate(360deg); color: gold; text-shadow: 0 0 5px gold; }
+        }
+
+        /* ஒவ்வொரு பணத்திற்கும் வெவ்வேறு வேகம், இடம் மற்றும் ஆரம்ப கலர் */
+        .m1 { left: 5%; animation-duration: 5s, 3s; font-size: 30px; animation-delay: 0s; }
+        .m2 { left: 15%; animation-duration: 7s, 4s; font-size: 20px; animation-delay: 1s; }
+        .m3 { left: 25%; animation-duration: 4s, 2s; font-size: 35px; animation-delay: 2s; }
+        .m4 { left: 35%; animation-duration: 6s, 5s; font-size: 25px; animation-delay: 0s; }
+        .m5 { left: 45%; animation-duration: 8s, 3s; font-size: 20px; animation-delay: 3s; }
+        .m6 { left: 55%; animation-duration: 5s, 4s; font-size: 30px; animation-delay: 1s; }
+        .m7 { left: 65%; animation-duration: 7s, 2s; font-size: 25px; animation-delay: 2s; }
+        .m8 { left: 75%; animation-duration: 4s, 5s; font-size: 35px; animation-delay: 0s; }
+        .m9 { left: 85%; animation-duration: 6s, 3s; font-size: 20px; animation-delay: 3s; }
+        .m10 { left: 95%; animation-duration: 5s, 4s; font-size: 30px; animation-delay: 1s; }
+
+    </style>
+</head>
+<body>
+
+<div class="money-rain">
+    <div class="money m1">💸</div>
+    <div class="money m2">💎</div> <div class="money m3" style="color: gold;">₹</div>
+    <div class="money m4">💵</div>
+    <div class="money m5">📀</div> <div class="money m6">💰</div>
+    <div class="money m7" style="color: cyan;">₹</div>
+    <div class="money m8">💎</div>
+    <div class="money m9">💸</div>
+    <div class="money m10">💰</div>
+</div>
+
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand text-white fw-bold" href="{% url 'home' %}">🚀 PK Tracker</a>
+        <div class="d-flex">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+            <a class="nav-link" href="{% url 'expense_list' %}">Expenses</a>
+            <a class="nav-link" href="{% url 'charts' %}">Charts</a>
+            <a class="nav-link" href="{% url 'download' %}">Download</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4" style="position: relative; z-index: 10;">
+    {% block content %} {% endblock %}
+</div>
+
+</body>
+</html>

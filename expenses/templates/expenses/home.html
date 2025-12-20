@@ -1,0 +1,29 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h1 style="font-size: 3.5rem; font-weight: bold; background: -webkit-linear-gradient(#38ef7d, #11998e); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        PK EXPENSE TRACKER
+    </h1>
+    <h3 class="mt-3 text-warning fst-italic">"ஓடவும் முடியாது, ஒளியவும் முடியாது!"</h3>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-8">
+            <div class="card-glass">
+                <h4>👋 Welcome Hero!</h4>
+                <p class="text-white-50">
+                    பணத்தை சம்பாதிக்கிறது கஷ்டம், ஆனா செலவு பண்றது ஈஸி! <br>
+                    உங்க ஒவ்வொரு ரூபாயும் எங்கே போகுதுனு கண்டுபிடிக்க இதான் சரியான இடம்.
+                </p>
+                <div class="d-flex justify-content-around mt-4">
+                    <div>📝 <b>Note It</b></div>
+                    <div>📊 <b>See Charts</b></div>
+                    <div>📂 <b>Download</b></div>
+                </div>
+                <br>
+                <a href="{% url 'expense_list' %}" class="btn btn-custom">Start Tracking Now 🚀</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

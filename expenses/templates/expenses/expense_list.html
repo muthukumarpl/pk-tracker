@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-    /* Card Glass Design */
     .card-glass {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
@@ -17,6 +16,7 @@
         border: none;
         color: white;
         font-weight: bold;
+        border-radius: 50px;
         transition: 0.3s;
     }
 
@@ -25,17 +25,13 @@
         box-shadow: 0 4px 15px rgba(56, 239, 125, 0.4);
     }
 
-    /* Table Styling */
-    .table-dark {
-        background: transparent !important;
+    .progress {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 50px;
+        height: 25px;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    .table-dark thead th {
-        border-bottom: 2px solid rgba(255,255,255,0.1);
-        color: #ffc107;
-    }
-
-    /* Pill Buttons for Edit/Delete */
     .btn-action {
         border-radius: 50px;
         font-size: 0.85rem;
@@ -48,25 +44,10 @@
         font-weight: 500;
     }
 
-    .btn-edit {
-        border: 1px solid #0dcaf0;
-        color: #0dcaf0 !important;
-    }
-
-    .btn-edit:hover {
-        background: #0dcaf0;
-        color: white !important;
-    }
-
-    .btn-delete {
-        border: 1px solid #ff4b2b;
-        color: #ff4b2b !important;
-    }
-
-    .btn-delete:hover {
-        background: #ff4b2b;
-        color: white !important;
-    }
+    .btn-edit { border: 1px solid #0dcaf0; color: #0dcaf0 !important; }
+    .btn-edit:hover { background: #0dcaf0; color: white !important; }
+    .btn-delete { border: 1px solid #ff4b2b; color: #ff4b2b !important; }
+    .btn-delete:hover { background: #ff4b2b; color: white !important; }
 </style>
 
 <div class="row">
@@ -76,33 +57,59 @@
             <a href="{% url 'set_budget' %}" class="btn btn-sm btn-outline-warning w-100 fw-bold rounded-pill">⚙️ Change Limit</a>
         </div>
 
+        <div class="card-glass mb-4">
+            <h5 class="text-center mb-3">📊 Budget Usage</h5>
+            <div class="progress mb-2">
+                <div class="progress-bar progress-bar-striped progress-bar-animated
+                    {% if real_percentage < 70 %} bg-success
+                    {% elif real_percentage < 90 %} bg-warning
+                    {% else %} bg-danger {% endif %}"
+                    role="progressbar"
+                    style="width: {{ percentage }}%;"
+                    aria-valuenow="{{ percentage }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100">
+                    {{ real_percentage|floatformat:0 }}%
+                </div>
+            </div>
+            <p class="text-center small mb-0">
+                {% if real_percentage >= 100 %}
+                    <span class="text-danger fw-bold">🚨 Limit Exceeded!</span>
+                {% elif real_percentage >= 80 %}
+                    <span class="text-warning fw-bold">⚠️ Warning: High Usage</span>
+                {% else %}
+                    <span class="text-success">✅ Safe Zone</span>
+                {% endif %}
+            </p>
+        </div>
+
         <div class="card-glass">
             <h4 class="mb-3 text-info">➕ Add Expense</h4>
             <form method="POST">
                 {% csrf_token %}
                 <div class="mb-2">{{ form.as_p }}</div>
-                <button type="submit" class="btn btn-custom w-100 rounded-pill">Save Expense</button>
+                <button type="submit" class="btn btn-custom w-100">Save Expense</button>
             </form>
         </div>
     </div>
 
     <div class="col-md-8">
         {% if is_over_budget %}
-        <div class="alert alert-danger text-center fw-bold shadow-lg animate__animated animate__shakeX">
+        <div class="alert alert-danger text-center fw-bold shadow">
             🚨 பட்ஜெட் தாண்டி போகுது! <br> "ஓடவும் முடியாது, ஒளியவும் முடியாது!"
         </div>
         {% endif %}
 
         <div class="card-glass mb-3 text-center p-3" style="border: 2px solid #38ef7d; background: rgba(56, 239, 125, 0.1);">
-            <h3 class="mb-0">💰 Total Spent: <span class="text-white">₹{{ total_amount }}</span></h3>
+            <h3 class="mb-0">💰 Total Spent: ₹{{ total_amount }}</h3>
         </div>
 
         <div class="card-glass">
             <div class="d-flex flex-wrap justify-content-between mb-3 align-items-center">
                 <h4 class="text-info">📜 Recent Transactions</h4>
                 <form method="GET" class="d-flex mt-2 mt-md-0">
-                    <input type="text" name="search" placeholder="Search expenses..." class="form-control form-control-sm me-2 bg-dark text-white border-secondary" value="{{ search_query|default:'' }}">
-                    <button class="btn btn-sm btn-custom px-3 rounded-pill">🔍</button>
+                    <input type="text" name="search" placeholder="Search..." class="form-control form-control-sm me-2 bg-dark text-white border-secondary" value="{{ search_query|default:'' }}">
+                    <button class="btn btn-sm btn-custom px-3">🔍</button>
                 </form>
             </div>
 
@@ -114,7 +121,7 @@
                             <th>Title</th>
                             <th>Category</th>
                             <th>Amount</th>
-                            <th class="text-center">Changes</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -122,7 +129,7 @@
                         <tr>
                             <td class="small">{{ e.date|date:"d M" }}</td>
                             <td class="fw-bold">{{ e.title }}</td>
-                            <td><span class="badge bg-secondary opacity-75">{{ e.category }}</span></td>
+                            <td><span class="badge bg-secondary">{{ e.category }}</span></td>
                             <td class="text-warning fw-bold">₹{{ e.amount }}</td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
@@ -130,10 +137,6 @@
                                     <a href="{% url 'delete_expense' e.id %}" class="btn-action btn-delete">🗑 Delete</a>
                                 </div>
                             </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No records found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

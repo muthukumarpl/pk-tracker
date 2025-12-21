@@ -1,0 +1,16 @@
+{% extends 'expenses/base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 text-center">
+        <div class="card-glass" style="border: 1px solid #ff4444;">
+            <h2 class="text-danger mb-3">⚠️ Confirm Delete?</h2>
+            <p>Do you really want to delete <strong>"{{ expense.title }}"</strong>?</p>
+            <form method="POST" class="mt-4">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger px-4">Yes, Delete</button>
+                <a href="{% url 'expense_list' %}" class="btn btn-secondary px-4">No</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

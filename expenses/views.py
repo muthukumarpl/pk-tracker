@@ -1,19 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Expense, Budget  # Budget Import
-from .forms import ExpenseForm, BudgetForm  # BudgetForm Import
+from .models import Expense, Budget
+from .forms import ExpenseForm, BudgetForm
 from django.db.models import Sum
 from django.http import HttpResponse
 import csv
 
 
-# 1. HOME
 def home(request):
     return render(request, 'expenses/home.html')
 
 
-# 2. SET BUDGET (NEW)
 def set_budget(request):
-    # ஏற்கனவே பட்ஜெட் இருந்தால் அதை எடு, இல்லாவிட்டால் புதிதாக உருவாக்கு
     budget = Budget.objects.first()
     if request.method == 'POST':
         form = BudgetForm(request.POST, instance=budget)
@@ -25,7 +22,6 @@ def set_budget(request):
     return render(request, 'expenses/set_budget.html', {'form': form})
 
 
-# 3. EXPENSE LIST (UPDATED WITH ALERT)
 def expense_list(request):
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
@@ -35,19 +31,20 @@ def expense_list(request):
     else:
         form = ExpenseForm()
 
-    # எல்லா செலவுகளையும் எடுப்போம்
     expenses = Expense.objects.all().order_by('-date')
-
-    # 🔥 SEARCH LOGIC: பயனர் எதையாவது தேடுகிறாரா?
     search_query = request.GET.get('search')
     if search_query:
-        expenses = expenses.filter(title__icontains=search_query)  # தலைப்பில் தேடும்
+        expenses = expenses.filter(title__icontains=search_query)
 
     total_amount = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
-
     budget_obj = Budget.objects.first()
     budget_limit = budget_obj.limit if budget_obj else 0
+
     is_over_budget = (budget_limit > 0 and total_amount > budget_limit)
+
+    # 🔥 Progress Bar Percentage Calculation
+    real_percentage = (total_amount / budget_limit * 100) if budget_limit > 0 else 0
+    display_percentage = min(real_percentage, 100)  # பாரை 100% மேல் போகாமல் தடுக்க
 
     return render(request, 'expenses/expense_list.html', {
         'form': form,
@@ -55,12 +52,12 @@ def expense_list(request):
         'total_amount': total_amount,
         'budget_limit': budget_limit,
         'is_over_budget': is_over_budget,
-        'search_query': search_query  # தேடிய வார்த்தையை மீண்டும் காட்ட
+        'percentage': display_percentage,
+        'real_percentage': real_percentage,
+        'search_query': search_query
     })
 
 
-# ... (மற்ற Edit, Delete, Charts, Download வியூகள் பழையபடியே இருக்கட்டும்) ...
-# (Edit, Delete, Charts, Download Logic கீழே அப்படியே இருக்க வேண்டும்)
 def edit_expense(request, id):
     expense = get_object_or_404(Expense, id=id)
     if request.method == 'POST':
@@ -93,8 +90,8 @@ def charts(request):
     amounts = list(data.values())
     return render(request, 'expenses/charts.html', {'categories': categories, 'amounts': amounts})
 
+
 def expense_history(request):
-    # எல்லா செலவுகளையும் எடுத்து தேதியின் அடிப்படையில் வரிசைப்படுத்துகிறோம்
     expenses = Expense.objects.all().order_by('-date')
     return render(request, 'expenses/history.html', {'expenses': expenses})
 
@@ -110,5 +107,4 @@ def export_csv(request):
     writer.writerow(['Title', 'Category', 'Amount', 'Date'])
     for expense in Expense.objects.all():
         writer.writerow([expense.title, expense.category, expense.amount, expense.date])
-
     return response

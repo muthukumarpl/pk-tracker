@@ -1,0 +1,205 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+<style>
+    /* Premium Glassmorphism Design */
+    .card-glass {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 22px;
+        color: white;
+        margin-bottom: 25px;
+        transition: 0.3s ease;
+    }
+
+    .card-glass:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .btn-custom {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border: none; color: white; font-weight: bold; border-radius: 50px;
+        padding: 10px 20px; transition: 0.4s;
+    }
+
+    .btn-custom:hover { transform: scale(1.03); box-shadow: 0 5px 20px rgba(56, 239, 125, 0.4); }
+
+    .progress { height: 16px; background: rgba(255,255,255,0.05); border-radius: 50px; overflow: hidden; }
+
+    /* Income List Styling */
+    .income-item {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-radius: 12px !important;
+        margin-bottom: 10px;
+        transition: 0.3s;
+    }
+
+    .btn-delete-neon {
+        color: #ff4b2b;
+        background: rgba(255, 75, 43, 0.1);
+        border: 1px solid rgba(255, 75, 43, 0.3);
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .btn-delete-neon:hover {
+        background: #ff4b2b;
+        color: white;
+        box-shadow: 0 0 12px rgba(255, 75, 43, 0.5);
+    }
+
+    .summary-card { border-top: 5px solid; }
+</style>
+
+<div class="row mb-4 text-center">
+    <div class="col-md-4 mb-3">
+        <div class="card-glass summary-card border-success">
+            <h6 class="text-success fw-bold small">💰 TOTAL INCOME</h6>
+            <h2 class="mb-0 fw-bold">₹{{ total_income }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card-glass summary-card border-danger">
+            <h6 class="text-danger fw-bold small">💸 TOTAL SPENT</h6>
+            <h2 class="mb-0 fw-bold">₹{{ total_amount }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card-glass summary-card border-info" style="background: rgba(0, 255, 255, 0.03);">
+            <h6 class="text-info fw-bold small">🏦 NET SAVINGS</h6>
+            <h2 class="mb-0 fw-bold {% if savings < 0 %}text-danger{% else %}text-info{% endif %}">₹{{ savings }}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+
+        <div class="card-glass shadow-lg" style="border-color: rgba(0, 255, 255, 0.3);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 text-info fw-bold">📉 Budget Usage</h6>
+                <span class="badge rounded-pill bg-dark border border-info px-3 py-2" style="font-size: 0.85rem; color: #0dcaf0;">
+                    {{ real_percentage|floatformat:0 }}% Usage
+                </span>
+            </div>
+
+            <div class="progress mb-3">
+                <div class="progress-bar progress-bar-striped progress-bar-animated
+                    {% if real_percentage < 70 %} bg-success
+                    {% elif real_percentage < 90 %} bg-warning
+                    {% else %} bg-danger {% endif %}"
+                    role="progressbar"
+                    style="width: {{ percentage }}%;">
+                </div>
+            </div>
+
+            <div class="status-box text-center py-2" style="background: rgba(0,0,0,0.3); border-radius: 12px;">
+                {% if real_percentage >= 100 %}
+                    <p class="small text-danger fw-bold mb-0" style="text-shadow: 0 0 10px rgba(255,0,0,0.5);">
+                        🚨 "சிவப்பு எச்சரிக்கை!" - பட்ஜெட் காலி, செலவை நிறுத்துங்க!
+                    </p>
+                {% elif real_percentage >= 80 %}
+                    <p class="small text-warning fw-bold mb-0" style="text-shadow: 0 0 10px rgba(255,193,7,0.5);">
+                        ⚠️ "கவனமா இருங்க!" - இன்னும் கொஞ்ச நேரத்துல லிமிட் முடிஞ்சிடும்.
+                    </p>
+                {% else %}
+                    <p class="small fw-bold mb-0" style="color: #38ef7d; text-shadow: 0 0 15px rgba(56, 239, 125, 0.6);">
+                        ✨ "{{ real_percentage|floatformat:0 }}% Usage - மாஸ் காட்டுறீங்க!" - Safe Zone.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-glass border-success" style="border-width: 2px;">
+            <h5 class="text-success mb-3 fw-bold">➕ Add New Income</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">{{ income_form.source }}</div>
+                <div class="mb-3">{{ income_form.amount }}</div>
+                <button type="submit" name="add_income" class="btn btn-success w-100 rounded-pill fw-bold">Deposit Money</button>
+            </form>
+        </div>
+
+        <div class="card-glass" style="border-color: rgba(56, 239, 125, 0.3);">
+            <h6 class="text-success fw-bold mb-3">📊 Income History</h6>
+            <div class="list-group list-group-flush">
+                {% for inc in incomes %}
+                <div class="list-group-item income-item d-flex justify-content-between align-items-center text-white p-3">
+                    <div>
+                        <small class="text-info d-block fw-bold">{{ inc.date|date:"d M" }}</small>
+                        <span class="fw-bold">{{ inc.source }}</span>
+                    </div>
+                    <div class="text-end">
+                        <span class="d-block text-success fw-bold mb-1">₹{{ inc.amount }}</span>
+                        <form action="{% url 'delete_income' inc.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-delete-neon" onclick="return confirm('Delete this income entry?')">
+                                🗑 DELETE
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted small py-3">No income records found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card-glass border-info" style="border-width: 2px;">
+            <h5 class="text-info mb-3 fw-bold">💸 Record New Expense</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12">{{ expense_form.as_p }}</div>
+                </div>
+                <button type="submit" name="add_expense" class="btn btn-custom w-100 py-2 mt-2">Add Expense Transaction</button>
+            </form>
+        </div>
+
+        <div class="card-glass">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="text-info mb-0 fw-bold">📜 Expense Log</h4>
+                <form method="GET" class="d-flex">
+                    <input type="text" name="search" placeholder="Quick Search..." class="form-control form-control-sm me-2 bg-dark text-white border-secondary rounded-pill px-3" value="{{ search_query|default:'' }}">
+                    <button class="btn btn-sm btn-custom rounded-circle">🔍</button>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle">
+                    <thead>
+                        <tr class="text-warning small text-uppercase">
+                            <th>Date</th><th>Title</th><th>Category</th><th>Amount</th><th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in expenses %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td class="small text-muted">{{ e.date|date:"d M" }}</td>
+                            <td class="fw-bold">{{ e.title }}</td>
+                            <td><span class="badge bg-secondary px-3 rounded-pill" style="font-size: 0.7rem;">{{ e.category }}</span></td>
+                            <td class="text-warning fw-bold">₹{{ e.amount }}</td>
+                            <td class="text-center">
+                                <a href="{% url 'edit_expense' e.id %}" class="text-info me-3 text-decoration-none" title="Edit">✏️</a>
+                                <a href="{% url 'delete_expense' e.id %}" class="text-danger text-decoration-none" title="Delete">🗑️</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-4 text-muted">No expenses recorded yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

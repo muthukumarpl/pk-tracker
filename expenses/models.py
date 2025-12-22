@@ -1,6 +1,6 @@
 from django.db import models
 
-# --- OLD MODEL ---
+# --- UPDATED EXPENSE MODEL ---
 class Expense(models.Model):
     CATEGORY_CHOICES = [
         ('Food', 'Food '),
@@ -9,7 +9,8 @@ class Expense(models.Model):
         ('EMI/Loans', 'EMI/Loans '),
         ('Shopping', 'Shopping '),
         ('Bills', 'Bills '),
-        ('Others', 'Others ️'),
+        ('Investment', 'Investment '), # இதுதான் மிக முக்கியமானது!
+        ('Others', 'Others '),
     ]
 
     title = models.CharField(max_length=100)
@@ -20,21 +21,21 @@ class Expense(models.Model):
     def __str__(self):
         return self.title
 
-# --- 🔥 NEW BUDGET MODEL ---
+# --- BUDGET MODEL ---
 class Budget(models.Model):
     limit = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.limit)
 
+# --- INCOME MODEL ---
 class Income(models.Model):
-    source = models.CharField(max_length=100) # எதிலிருந்து வருமானம் (Salary, Business)
+    source = models.CharField(max_length=100)
     amount = models.FloatField()
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField() # auto_now_add=True-ஐ நீக்கியுள்ளேன், அப்போதுதான் பழைய தேதிகளையும் சேர்க்க முடியும்
 
     def __str__(self):
         return f"{self.source} - {self.amount}"
-
 
 
 """

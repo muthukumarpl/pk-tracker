@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Expense, Budget, Income
 from .forms import ExpenseForm, BudgetForm, IncomeForm
@@ -7,6 +6,8 @@ from django.http import HttpResponse
 import csv
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from datetime import timedelta  # புதிய இறக்குமதி
+from django.utils import timezone  # புதிய இறக்குமதி
 
 
 def home(request):
@@ -132,7 +133,6 @@ def download(request):
     return render(request, 'expenses/download.html')
 
 
-# --- புதிய Calendar View ---
 def calendar_view(request):
     expenses = Expense.objects.all()
     incomes = Income.objects.all()
@@ -140,26 +140,51 @@ def calendar_view(request):
 
     for expense in expenses:
         events.append({
-            'id': expense.id, # ID சேர்த்துள்ளேன்
-            'type': 'expense', # வகை சேர்த்துள்ளேன்
+            'id': expense.id,
             'title': f"🔻 {expense.title}: ₹{expense.amount}",
             'start': expense.date.strftime("%Y-%m-%d"),
             'backgroundColor': '#f64f59',
             'borderColor': '#f64f59',
-            'textColor': '#fff'
+            'textColor': '#fff',
+            'extendedProps': {'type': 'expense'}
         })
 
     for income in incomes:
         income_name = getattr(income, 'source', getattr(income, 'title', 'Income'))
         events.append({
-            'id': income.id, # ID சேர்த்துள்ளேன்
-            'type': 'income', # வகை சேர்த்துள்ளேன்
+            'id': income.id,
             'title': f"🔹 {income_name}: ₹{income.amount}",
             'start': income.date.strftime("%Y-%m-%d"),
             'backgroundColor': '#28a745',
             'borderColor': '#28a745',
-            'textColor': '#fff'
+            'textColor': '#fff',
+            'extendedProps': {'type': 'income'}
         })
 
     events_json = json.dumps(events, cls=DjangoJSONEncoder)
     return render(request, 'expenses/calendar.html', {'events': events_json})
+
+
+# --- புதிய Forecast View ---
+def forecast_view(request):
+    # கடந்த 30 நாட்களின் தரவுகள்
+    last_30_days = timezone.now() - timedelta(days=30)
+    expenses = Expense.objects.filter(date__gte=last_30_days)
+
+    total_spent_30 = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    daily_average = total_spent_30 / 30
+
+    # கணிப்பு (Prediction)
+    predicted_monthly_expense = daily_average * 30
+
+    # மொத்த வருமானம் மற்றும் சேமிப்பு கணிப்பு
+    total_income = Income.objects.all().aggregate(Sum('amount'))['amount__sum'] or 0
+    potential_savings = total_income - predicted_monthly_expense
+
+    context = {
+        'daily_average': round(daily_average, 2),
+        'predicted_monthly': round(predicted_monthly_expense, 2),
+        'potential_savings': round(potential_savings, 2),
+        'total_income': total_income,
+    }
+    return render(request, 'expenses/forecast.html', context)

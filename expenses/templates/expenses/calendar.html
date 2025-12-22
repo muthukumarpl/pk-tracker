@@ -1,0 +1,125 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-lg p-4 rounded-4" style="background: rgba(255,255,255,0.95); border: none; position: relative; overflow: hidden;">
+
+        <div class="piggy-bank">🐷</div>
+
+        <h2 class="text-center mb-4 fw-bold" style="color: #1e3c72; text-shadow: 1px 1px 5px rgba(0,0,0,0.1);">
+            Savings Calendar 📅
+        </h2>
+
+        <div id='calendar' class="shadow-sm p-2 bg-white rounded-3"></div>
+    </div>
+</div>
+
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* உண்டியல் அனிமேஷன் */
+    .piggy-bank {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        font-size: 3rem;
+        animation: bounce 2s infinite;
+        z-index: 10;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    /* பட்டன்களை பிரித்து வைத்தல் (Left & Right) */
+    .fc-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2em !important;
+    }
+
+    .fc-header-toolbar .fc-toolbar-chunk:nth-child(1) { order: 1; } /* Prev/Next buttons */
+    .fc-header-toolbar .fc-toolbar-chunk:nth-child(2) { order: 2; } /* Title */
+    .fc-header-toolbar .fc-toolbar-chunk:nth-child(3) { order: 3; } /* View buttons */
+
+    /* Calendar Colors */
+    .fc-daygrid-day-number { color: #1e3c72 !important; font-weight: bold; text-decoration: none; }
+    .fc-col-header-cell-cushion { color: #0d6efd !important; text-decoration: none; font-weight: 800; }
+
+    .fc-event {
+        cursor: pointer;
+        transition: 0.3s ease;
+        border: none !important;
+        padding: 4px !important;
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .fc-event:hover {
+        transform: scale(1.05);
+        filter: brightness(1.1);
+    }
+
+    /* Calendar Day Hover */
+    .fc-daygrid-day:hover { background: rgba(18, 194, 233, 0.05) !important; cursor: pointer; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today', // < > இடது பக்கம்
+                center: 'title',         // தலைப்பு நடுவில்
+                right: 'dayGridMonth,dayGridWeek' // வியூக்கள் வலது பக்கம்
+            },
+            events: {{ events|safe }},
+
+            // தேதியை கிளிக் செய்தால் புதிய எக்ஸ்பென்ஸ் ஆட் செய்ய லிங்க்
+            dateClick: function(info) {
+                Swal.fire({
+                    title: 'New Entry?',
+                    text: "Do you want to add an income or expense for " + info.dateStr + "?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Take me there!',
+                    confirmButtonColor: '#12c2e9'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{% url 'expense_list' %}";
+                    }
+                });
+            },
+
+            // ஈவென்ட் (Expense/Income) கிளிக் செய்தால் Edit/Delete ஆப்ஷன்
+            eventClick: function(info) {
+                Swal.fire({
+                    title: info.event.title,
+                    text: "Date: " + info.event.startStr,
+                    icon: 'info',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonText: 'Edit',
+                    denyButtonText: 'Delete',
+                    confirmButtonColor: '#ffc107',
+                    denyButtonColor: '#f64f59'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Edit செய்ய லிங்க் (இதில் ID தேவைப்படும், நாம் டைட்டிலில் இருந்து எடுக்கலாம் அல்லது URL அனுப்பலாம்)
+                        window.location.href = "{% url 'expense_list' %}";
+                    } else if (result.isDenied) {
+                        // Delete செய்ய லிங்க்
+                        window.location.href = "{% url 'expense_list' %}";
+                    }
+                });
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

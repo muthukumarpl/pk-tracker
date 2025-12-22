@@ -31,6 +31,38 @@
         </div>
     </div>
 
+    <div class="mt-5 p-4 rounded-4 shadow comparison-section">
+        <h4 class="text-white mb-4">Spent vs Investment Ratio 📊</h4>
+
+        <div class="progress mb-3" style="height: 35px; border-radius: 20px; background: #f64f59; border: 2px solid rgba(255,255,255,0.1);">
+            <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                 role="progressbar"
+                 style="width: {{ invest_ratio }}%;"
+                 aria-valuenow="{{ invest_ratio }}" aria-valuemin="0" aria-valuemax="100">
+                 <span class="fw-bold">Investment {{ invest_ratio }}%</span>
+            </div>
+        </div>
+
+        <div class="row mt-3 text-light">
+            <div class="col-6 text-start">
+                <span class="badge bg-danger p-2">📉 Daily Expenses</span>
+                <p class="mt-2 fs-5 fw-bold text-white">₹{{ total_spent }}</p>
+            </div>
+            <div class="col-6 text-end">
+                <span class="badge bg-success p-2">📈 Total Investment</span>
+                <p class="mt-2 fs-5 fw-bold text-white">₹{{ total_investment }}</p>
+            </div>
+        </div>
+
+        <div class="mt-4 p-3 rounded-3 advice-box">
+            {% if invest_ratio < 20 %}
+                <p class="text-warning mb-0">💡 <strong>Pro Tip:</strong> Your investment is below 20%. Try to increase your investments to build long-term wealth!</p>
+            {% else %}
+                <p class="text-info mb-0">🌟 <strong>Excellent!</strong> You have a healthy investment habit. You are building a secure financial future!</p>
+            {% endif %}
+        </div>
+    </div>
+
     <div class="mt-5 p-4 rounded-4 bg-dark border border-warning">
         {% if potential_savings < 0 %}
             <h4 class="text-danger">⚠️ Warning!</h4>
@@ -56,6 +88,19 @@
     .highlight {
         border: 2px solid #12c2e9 !important;
         box-shadow: 0 0 20px rgba(18, 194, 233, 0.3);
+    }
+    .comparison-section {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(5px);
+    }
+    .advice-box {
+        background: rgba(0,0,0,0.3);
+        border-left: 5px solid #ffc107;
+    }
+    .progress-bar {
+        font-size: 1rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 </style>
 {% endblock %}

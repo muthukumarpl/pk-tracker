@@ -7,9 +7,10 @@ urlpatterns = [
     path('set-budget/', views.set_budget, name='set_budget'),
     path('edit/<int:id>/', views.edit_expense, name='edit_expense'),
     path('delete/<int:id>/', views.delete_expense, name='delete_expense'),
-    path('delete-income/<int:id>/', views.delete_income, name='delete_income'), # New
+    path('delete-income/<int:id>/', views.delete_income, name='delete_income'),
     path('charts/', views.charts, name='charts'),
     path('history/', views.expense_history, name='expense_history'),
     path('download/', views.download, name='download'),
     path('export-csv/', views.export_csv, name='export_csv'),
+    path('calendar/', views.calendar_view, name='calendar'), # புதிய வரி
 ]

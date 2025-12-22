@@ -169,22 +169,28 @@ def calendar_view(request):
 def forecast_view(request):
     # கடந்த 30 நாட்களின் தரவுகள்
     last_30_days = timezone.now() - timedelta(days=30)
-    expenses = Expense.objects.filter(date__gte=last_30_days)
+    expenses_all = Expense.objects.filter(date__gte=last_30_days)
 
-    total_spent_30 = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
-    daily_average = total_spent_30 / 30
+    # Investment மட்டும் தனியாக
+    total_investment = expenses_all.filter(category__iexact='Investment').aggregate(Sum('amount'))['amount__sum'] or 0
+    # மற்ற செலவுகள் மட்டும்
+    total_spent = expenses_all.exclude(category__iexact='Investment').aggregate(Sum('amount'))['amount__sum'] or 0
 
-    # கணிப்பு (Prediction)
+    daily_average = total_spent / 30
     predicted_monthly_expense = daily_average * 30
-
-    # மொத்த வருமானம் மற்றும் சேமிப்பு கணிப்பு
     total_income = Income.objects.all().aggregate(Sum('amount'))['amount__sum'] or 0
     potential_savings = total_income - predicted_monthly_expense
+
+    # Spent vs Investment சதவீதம்
+    total_action = total_spent + total_investment
+    invest_ratio = (total_investment / total_action * 100) if total_action > 0 else 0
 
     context = {
         'daily_average': round(daily_average, 2),
         'predicted_monthly': round(predicted_monthly_expense, 2),
         'potential_savings': round(potential_savings, 2),
         'total_income': total_income,
+        'total_investment': total_investment,
+        'invest_ratio': round(invest_ratio, 1),
     }
     return render(request, 'expenses/forecast.html', context)

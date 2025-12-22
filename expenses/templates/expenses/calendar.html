@@ -1,93 +1,124 @@
 {% extends 'expenses/base.html' %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="card shadow-lg p-4 rounded-4" style="background: rgba(255,255,255,0.95); border: none; position: relative; overflow: hidden;">
-
-        <div class="piggy-bank">🐷</div>
-
-        <h2 class="text-center mb-4 fw-bold" style="color: #1e3c72; text-shadow: 1px 1px 5px rgba(0,0,0,0.1);">
-            Savings Calendar 📅
-        </h2>
-
-        <div id='calendar' class="shadow-sm p-2 bg-white rounded-3"></div>
-    </div>
-</div>
-
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<div class="container py-3 px-1">
+    <div class="card calendar-card shadow-lg p-2 p-md-4 rounded-4">
+        <div class="piggy-bank">🐷</div>
+
+        <h3 class="text-center mb-4 fw-bold calendar-title">Financial Journey Calendar 📅</h3>
+
+        <div class="calendar-wrapper shadow-sm rounded-4">
+            <div id='calendar'></div>
+        </div>
+    </div>
+</div>
+
 <style>
-    /* உண்டியல் அனிமேஷன் */
+    /* 1. பின்னணி (Background) - Glass Effect */
+    .calendar-card {
+        background: rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        position: relative;
+    }
+
+    .calendar-title {
+        color: #ffffff;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* 2. காலண்டர் ஸ்டைல் - Clean & Modern */
+    #calendar {
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 15px;
+        color: #333;
+    }
+
+    /* அண்டர்லைன் நீக்குதல் (Fixing Underline Issue) */
+    .fc-daygrid-day-number, .fc-col-header-cell-cushion {
+        text-decoration: none !important; /* அண்டர்லைனை நீக்கும் */
+        color: #1e3c72 !important;
+        font-weight: 700;
+    }
+
+    /* கிழமைகள் (Sun, Mon...) */
+    .fc-col-header-cell {
+        background: #f8f9fa;
+        padding: 10px 0;
+    }
+
+    /* இன்றைய தேதி */
+    .fc-day-today {
+        background: rgba(18, 194, 233, 0.1) !important;
+        border: 2px solid #12c2e9 !important;
+    }
+
+    /* 3. அனிமேஷன் */
     .piggy-bank {
         position: absolute;
-        top: 10px;
-        right: 20px;
-        font-size: 3rem;
+        top: 15px;
+        right: 30px;
+        font-size: 2.5rem;
         animation: bounce 2s infinite;
         z-index: 10;
     }
 
     @keyframes bounce {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-15px); }
+        50% { transform: translateY(-10px); }
     }
 
-    /* பட்டன்களை பிரித்து வைத்தல் (Left & Right) */
-    .fc-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2em !important;
-    }
-
-    .fc-header-toolbar .fc-toolbar-chunk:nth-child(1) { order: 1; } /* Prev/Next buttons */
-    .fc-header-toolbar .fc-toolbar-chunk:nth-child(2) { order: 2; } /* Title */
-    .fc-header-toolbar .fc-toolbar-chunk:nth-child(3) { order: 3; } /* View buttons */
-
-    /* Calendar Colors */
-    .fc-daygrid-day-number { color: #1e3c72 !important; font-weight: bold; text-decoration: none; }
-    .fc-col-header-cell-cushion { color: #0d6efd !important; text-decoration: none; font-weight: 800; }
-
+    /* ஈவென்ட் டிசைன் */
     .fc-event {
-        cursor: pointer;
-        transition: 0.3s ease;
+        border-radius: 6px !important;
+        padding: 3px 8px !important;
+        font-size: 0.85rem !important;
         border: none !important;
-        padding: 4px !important;
-        font-weight: 600;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: 0.2s ease;
     }
 
     .fc-event:hover {
         transform: scale(1.05);
-        filter: brightness(1.1);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
 
-    /* Calendar Day Hover */
-    .fc-daygrid-day:hover { background: rgba(18, 194, 233, 0.05) !important; cursor: pointer; }
+    /* மொபைல் மாற்றங்கள் */
+    @media (max-width: 768px) {
+        .fc-toolbar-title { font-size: 1rem !important; }
+        .fc-button { padding: 0.3em 0.5em !important; font-size: 0.8rem !important; }
+        .piggy-bank { font-size: 1.8rem; top: 10px; right: 15px; }
+    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
+
         var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
+            initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
             headerToolbar: {
-                left: 'prev,next today', // < > இடது பக்கம்
-                center: 'title',         // தலைப்பு நடுவில்
-                right: 'dayGridMonth,dayGridWeek' // வியூக்கள் வலது பக்கம்
+                left: 'prev,next today',
+                center: 'title',
+                right: window.innerWidth < 768 ? '' : 'dayGridMonth,dayGridWeek'
             },
             events: {{ events|safe }},
+            height: 'auto',
+            navLinks: true, // தேதியை கிளிக் செய்ய அனுமதிக்கும்
 
-            // தேதியை கிளிக் செய்தால் புதிய எக்ஸ்பென்ஸ் ஆட் செய்ய லிங்க்
+            // தேதியை கிளிக் செய்து ஆட் செய்தல்
             dateClick: function(info) {
                 Swal.fire({
-                    title: 'New Entry?',
-                    text: "Do you want to add an income or expense for " + info.dateStr + "?",
-                    icon: 'question',
+                    title: 'Add Entry',
+                    text: "Selected Date: " + info.dateStr,
+                    icon: 'info',
                     showCancelButton: true,
-                    confirmButtonText: 'Yes, Take me there!',
+                    confirmButtonText: '🚀 Go to Tracker',
                     confirmButtonColor: '#12c2e9'
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -96,25 +127,24 @@
                 });
             },
 
-            // ஈவென்ட் (Expense/Income) கிளிக் செய்தால் Edit/Delete ஆப்ஷன்
             eventClick: function(info) {
+                let eventId = info.event.id;
+                let eventType = info.event.extendedProps.type;
+
                 Swal.fire({
                     title: info.event.title,
-                    text: "Date: " + info.event.startStr,
-                    icon: 'info',
-                    showCancelButton: true,
+                    text: "Manage this record",
                     showDenyButton: true,
-                    confirmButtonText: 'Edit',
-                    denyButtonText: 'Delete',
+                    showCancelButton: true,
+                    confirmButtonText: '✏️ Edit',
+                    denyButtonText: '🗑️ Delete',
                     confirmButtonColor: '#ffc107',
                     denyButtonColor: '#f64f59'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Edit செய்ய லிங்க் (இதில் ID தேவைப்படும், நாம் டைட்டிலில் இருந்து எடுக்கலாம் அல்லது URL அனுப்பலாம்)
-                        window.location.href = "{% url 'expense_list' %}";
+                        window.location.href = eventType === 'expense' ? `/edit/${eventId}/` : `/expenses/`;
                     } else if (result.isDenied) {
-                        // Delete செய்ய லிங்க்
-                        window.location.href = "{% url 'expense_list' %}";
+                        window.location.href = eventType === 'expense' ? `/delete/${eventId}/` : `/delete-income/${eventId}/`;
                     }
                 });
             }

@@ -1,9 +1,12 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Expense, Budget, Income
 from .forms import ExpenseForm, BudgetForm, IncomeForm
 from django.db.models import Sum
 from django.http import HttpResponse
 import csv
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 def home(request):
@@ -23,7 +26,6 @@ def set_budget(request):
 
 
 def expense_list(request):
-    # 1. Income Handling
     if request.method == 'POST' and 'add_income' in request.POST:
         income_form = IncomeForm(request.POST)
         if income_form.is_valid():
@@ -32,7 +34,6 @@ def expense_list(request):
     else:
         income_form = IncomeForm()
 
-    # 2. Expense Handling
     if request.method == 'POST' and 'add_expense' in request.POST:
         expense_form = ExpenseForm(request.POST)
         if expense_form.is_valid():
@@ -41,27 +42,22 @@ def expense_list(request):
     else:
         expense_form = ExpenseForm()
 
-    # 3. Data Retrieval
     expenses = Expense.objects.all().order_by('-date')
     incomes = Income.objects.all().order_by('-date')
 
-    # Search Logic
     search_query = request.GET.get('search')
     if search_query:
         expenses = expenses.filter(title__icontains=search_query)
 
-    # 4. Financial Calculations (PostgreSQL compatible)
     total_spent = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
     total_income = incomes.aggregate(Sum('amount'))['amount__sum'] or 0
     savings = total_income - total_spent
 
-    # 5. Usage Pulse Logic (Income-அடிப்படையிலான சதவீதம்)
     if total_income > 0:
         real_percentage = (total_spent / total_income) * 100
     else:
         real_percentage = 0
-
-    display_percentage = min(real_percentage, 100)  # Progress bar-க்காக
+    display_percentage = min(real_percentage, 100)
 
     return render(request, 'expenses/expense_list.html', {
         'expense_form': expense_form,
@@ -134,3 +130,36 @@ def export_csv(request):
 
 def download(request):
     return render(request, 'expenses/download.html')
+
+
+# --- புதிய Calendar View ---
+def calendar_view(request):
+    expenses = Expense.objects.all()
+    incomes = Income.objects.all()
+    events = []
+
+    for expense in expenses:
+        events.append({
+            'id': expense.id, # ID சேர்த்துள்ளேன்
+            'type': 'expense', # வகை சேர்த்துள்ளேன்
+            'title': f"🔻 {expense.title}: ₹{expense.amount}",
+            'start': expense.date.strftime("%Y-%m-%d"),
+            'backgroundColor': '#f64f59',
+            'borderColor': '#f64f59',
+            'textColor': '#fff'
+        })
+
+    for income in incomes:
+        income_name = getattr(income, 'source', getattr(income, 'title', 'Income'))
+        events.append({
+            'id': income.id, # ID சேர்த்துள்ளேன்
+            'type': 'income', # வகை சேர்த்துள்ளேன்
+            'title': f"🔹 {income_name}: ₹{income.amount}",
+            'start': income.date.strftime("%Y-%m-%d"),
+            'backgroundColor': '#28a745',
+            'borderColor': '#28a745',
+            'textColor': '#fff'
+        })
+
+    events_json = json.dumps(events, cls=DjangoJSONEncoder)
+    return render(request, 'expenses/calendar.html', {'events': events_json})

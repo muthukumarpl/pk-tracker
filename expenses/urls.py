@@ -12,5 +12,8 @@ urlpatterns = [
     path('history/', views.expense_history, name='expense_history'),
     path('download/', views.download, name='download'),
     path('export-csv/', views.export_csv, name='export_csv'),
-    path('calendar/', views.calendar_view, name='calendar'), # புதிய வரி
+    path('calendar/', views.calendar_view, name='calendar'),
+
+    # புதிய Forecast வசதிக்கான வரி
+    path('forecast/', views.forecast_view, name='forecast'),
 ]

@@ -1,0 +1,16 @@
+{% extends 'expenses/base.html' %}
+{% block content %}
+<div class="container py-5 d-flex justify-content-center align-items-center">
+    <div class="main-container text-center animate-zoom" style="max-width: 400px; width: 100%;">
+        <h2 class="fw-bold mb-4">Create Account 🚀</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="text-start">
+                {{ form.as_p }}
+            </div>
+            <button type="submit" class="btn btn-success w-100 py-3 mt-3 fw-bold rounded-pill shadow-lg" style="background: linear-gradient(to right, #10b981, #3b82f6); border: none;">Get Started</button>
+        </form>
+        <p class="mt-4 text-secondary">Already have an account? <a href="{% url 'login' %}" class="text-info text-decoration-none fw-bold">Login here</a></p>
+    </div>
+</div>
+{% endblock %}

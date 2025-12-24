@@ -1,0 +1,100 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="text-center mb-4 fw-bold text-white">Expense Analysis 📊</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card p-4 shadow-lg rounded-4 text-center" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); min-height: 400px;">
+                <canvas id="expensePieChart"></canvas>
+                <div id="no-data-msg" class="text-white mt-5 d-none">
+                    <h4>No data found! ❌</h4>
+                    <p>Please add some expenses to see the analysis.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Django-விலிருந்து வரும் டேட்டாவை ஜாவாஸ்கிரிப்ட் வேரியபிளாக மாற்றுதல்
+        const categories = {{ categories|safe|default:"[]" }};
+        const amounts = {{ amounts|safe|default:"[]" }};
+
+        console.log("Categories:", categories); // பிழை கண்டுபிடிக்க Browser Console-ல் பார்க்கலாம்
+        console.log("Amounts:", amounts);
+
+        const ctx = document.getElementById('expensePieChart').getContext('2d');
+        const noDataMsg = document.getElementById('no-data-msg');
+
+        // டேட்டா இல்லையென்றால் மெசேஜ் காட்ட
+        if (categories.length === 0 || amounts.length === 0) {
+            document.getElementById('expensePieChart').style.display = 'none';
+            noDataMsg.classList.remove('d-none');
+            return;
+        }
+
+        // சார்ட் வரைதல்
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: categories,
+                datasets: [{
+                    label: 'Expenses by Category',
+                    data: amounts,
+                    backgroundColor: [
+                        '#3b82f6', // Blue
+                        '#8b5cf6', // Purple
+                        '#ec4899', // Pink
+                        '#f59e0b', // Orange
+                        '#10b981', // Green
+                        '#ef4444', // Red
+                        '#6366f1'  // Indigo
+                    ],
+                    hoverOffset: 20,
+                    borderWidth: 2,
+                    borderColor: '#030712'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#f9fafb',
+                            padding: 20,
+                            font: {
+                                size: 14,
+                                family: 'Plus Jakarta Sans',
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 16 },
+                        bodyFont: { size: 14 },
+                        displayColors: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+    /* சார்ட் மொபைலில் கட் ஆகாமல் இருக்க */
+    canvas {
+        max-width: 100% !important;
+        max-height: 400px !important;
+    }
+</style>
+{% endblock %}

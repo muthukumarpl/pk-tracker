@@ -1,0 +1,25 @@
+{% extends 'expenses/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between">
+        <h2>My Groups 👥</h2>
+        <a href="{% url 'create_group' %}" class="btn btn-primary rounded-pill">+ New Group</a>
+    </div>
+    <div class="row mt-3">
+        {% for group in groups %}
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ group.name }}</h5>
+                    <p class="badge bg-info text-dark">{{ group.get_group_type_display }}</p>
+                    <p>Members: {{ group.members.count }}</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No groups found. Create one to start sharing expenses!</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

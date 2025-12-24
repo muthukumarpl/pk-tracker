@@ -1,0 +1,185 @@
+{% extends 'expenses/base.html' %}
+
+
+{% block content %}
+<style>
+    /* Premium Glassmorphism Design */
+    .card-glass {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 22px;
+        color: white;
+        margin-bottom: 25px;
+        transition: 0.3s ease;
+    }
+
+    .btn-custom {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border: none; color: white; font-weight: bold; border-radius: 50px;
+        padding: 10px 20px; transition: 0.4s;
+    }
+
+    .btn-custom:hover { transform: scale(1.03); box-shadow: 0 5px 20px rgba(56, 239, 125, 0.4); }
+
+    .progress { height: 16px; background: rgba(255,255,255,0.05); border-radius: 50px; overflow: hidden; }
+
+    /* Action Buttons Styling (EDIT/DELETE) */
+    .btn-action {
+        border-radius: 50px;
+        font-size: 0.75rem;
+        padding: 6px 14px;
+        transition: 0.3s;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .btn-edit-outline { border: 2px solid #0dcaf0; color: #0dcaf0 !important; }
+    .btn-edit-outline:hover { background: #0dcaf0; color: white !important; box-shadow: 0 0 10px rgba(13, 202, 240, 0.4); }
+
+    .btn-delete-outline { border: 2px solid #ff4b2b; color: #ff4b2b !important; }
+    .btn-delete-outline:hover { background: #ff4b2b; color: white !important; box-shadow: 0 0 10px rgba(255, 75, 43, 0.4); }
+
+    /* பளிச்சென்று தெரியும் தேதி (Date) */
+    .date-text {
+        color: #f8f9fa !important;
+        font-weight: 700;
+        text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.2);
+        font-size: 0.9rem;
+    }
+
+    .income-item {
+        background: rgba(0, 0, 0, 0.25) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        margin-bottom: 12px;
+    }
+</style>
+
+<div class="row mb-4 text-center">
+    <div class="col-md-4 mb-3">
+        <div class="card-glass border-top border-success border-4">
+            <h6 class="text-success fw-bold small">💰 TOTAL INCOME</h6>
+            <h2 class="mb-0 fw-bold">₹{{ total_income }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card-glass border-top border-danger border-4">
+            <h6 class="text-danger fw-bold small">💸 TOTAL SPENT</h6>
+            <h2 class="mb-0 fw-bold">₹{{ total_amount }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card-glass border-top border-info border-4" style="background: rgba(0, 255, 255, 0.03);">
+            <h6 class="text-info fw-bold small">🏦 NET SAVINGS</h6>
+            <h2 class="mb-0 fw-bold {% if savings < 0 %}text-danger{% else %}text-info{% endif %}">₹{{ savings }}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card-glass shadow-lg" style="border-color: rgba(0, 255, 255, 0.3);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 text-info fw-bold">📉 Financial Pulse</h6>
+                <span class="badge rounded-pill bg-dark border border-info px-3 py-2" style="font-size: 0.85rem; color: #0dcaf0;">
+                    {{ real_percentage|floatformat:0 }}% Usage
+                </span>
+            </div>
+            <div class="progress mb-3">
+                <div class="progress-bar progress-bar-striped progress-bar-animated {% if real_percentage < 70 %} bg-success {% elif real_percentage < 90 %} bg-warning {% else %} bg-danger {% endif %}" style="width: {{ percentage }}%;"></div>
+            </div>
+            <div class="status-box text-center py-2" style="background: rgba(0,0,0,0.3); border-radius: 12px;">
+                {% if real_percentage >= 100 %}
+                    <p class="small text-danger fw-bold mb-0">🚨 "சிவப்பு எச்சரிக்கை!" - பட்ஜெட் காலி!</p>
+                {% elif real_percentage >= 80 %}
+                    <p class="small text-warning fw-bold mb-0">⚠️ "கவனமா இருங்க!" - லிமிட் முடியுது.</p>
+                {% else %}
+                    <p class="small fw-bold mb-0" style="color: #38ef7d;">✨ "{{ real_percentage|floatformat:0 }}% Usage - மாஸ் காட்டுறீங்க!"</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-glass border-success">
+            <h5 class="text-success mb-3 fw-bold">➕ Add Income</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">{{ income_form.source }}</div>
+                <div class="mb-3">{{ income_form.amount }}</div>
+                <button type="submit" name="add_income" class="btn btn-success w-100 rounded-pill fw-bold">Add Income</button>
+            </form>
+        </div>
+
+        <div class="card-glass border-info">
+            <h6 class="text-info fw-bold mb-3">📊 Recent Incomes</h6>
+            {% for inc in incomes %}
+            <div class="income-item d-flex justify-content-between align-items-center p-3 text-white">
+                <div>
+                    <small class="date-text d-block text-uppercase mb-1">{{ inc.date|date:"d M" }}</small>
+                    <span class="fw-bold">{{ inc.source }}</span>
+                </div>
+                <div class="text-end">
+                    <span class="text-success fw-bold d-block">₹{{ inc.amount }}</span>
+                    <form action="{% url 'delete_income' inc.id %}" method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action btn-delete-outline py-1 px-2 mt-1" style="font-size: 0.6rem;" onclick="return confirm('Delete this income entry?')">DELETE</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card-glass border-info" style="border-width: 2px;">
+            <h5 class="text-info mb-3 fw-bold">💸 Record Expense</h5>
+            <form method="POST">
+                {% csrf_token %}
+                {{ expense_form.as_p }}
+                <button type="submit" name="add_expense" class="btn btn-custom w-100 py-2 mt-2">Save Transaction</button>
+            </form>
+        </div>
+
+        <div class="card-glass">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="text-info mb-0 fw-bold">📜 History </h4>
+                <form method="GET" class="d-flex">
+                    <input type="text" name="search" placeholder="Search..." class="form-control form-control-sm me-2 bg-dark text-white border-secondary rounded-pill px-3" value="{{ search_query|default:'' }}">
+                    <button class="btn btn-sm btn-custom rounded-circle">🔍</button>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle">
+                    <thead>
+                        <tr class="text-warning small uppercase">
+                            <th>Date</th><th>Title</th><th>Category</th><th>Amount</th><th class="text-center">Changes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in expenses %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td class="date-text">{{ e.date|date:"d M" }}</td>
+                            <td class="fw-bold">{{ e.title }}</td>
+                            <td><span class="badge bg-secondary rounded-pill px-3">{{ e.category }}</span></td>
+                            <td class="text-warning fw-bold">₹{{ e.amount }}</td>
+                            <td class="text-center">
+                                <a href="{% url 'edit_expense' e.id %}" class="btn-action btn-edit-outline me-2">EDIT</a>
+                                <a href="{% url 'delete_expense' e.id %}" class="btn-action btn-delete-outline">DELETE</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-4 text-muted">No transactions found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
